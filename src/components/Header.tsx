@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react";
 import { connectToBrowserProvider } from "../utils/script";
 import { truncateAddress } from "../utils/helpers";
-import { AccountContext, useAccount } from "../context/UserContext";
+import {useAccount } from "../context/UserContext";
 
 const Header = () => {
   const account = useAccount();
-  const [userAddress, setuserAddress] = useState("");
 
   const connectWallet = async () => {
     let userAddress = await connectToBrowserProvider();
