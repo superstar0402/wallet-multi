@@ -5,12 +5,13 @@ import {
   useEffect,
   useState,
 } from "react";
-import { getAddress, loadProvider } from "../utils/script";
+import { autoConnectWallet, getAddress, loadProvider } from "../utils/script";
 
 // Define the shape of the context state
 interface AccountContextState {
   provider: any | null;
   address: string | null;
+  updateAddress: (address: string) => void;
 }
 
 // Define the props for the provider component
@@ -19,9 +20,11 @@ interface AccountProviderProps {
 }
 
 // set default state of the context state
-const AccountContext = createContext<AccountContextState | undefined>(
-  undefined
-);
+export const AccountContext = createContext<AccountContextState>({
+  address: null,
+  provider: null,
+  updateAddress: (_a: string) => {},
+});
 
 // The UserProvider component that wraps its children components in a UserContext Provider,
 // allowing descendant components to subscribe to updates from the user object
@@ -29,16 +32,16 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
   children,
 }) => {
   const [provider, setProvider] = useState(null);
-  const [address, setAddress] = useState(null);
+  const [address, setAddress] = useState<string | null>(null);
 
   let account = { provider, address };
 
   const fetchData = async () => {
     const provider = await loadProvider();
-    const address = await getAddress();
+    const address = await autoConnectWallet();
 
     setProvider(provider);
-    setAddress(address);
+    setAddress(address ? address : null);
   };
 
   useEffect(() => {
@@ -46,7 +49,14 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
   }, []);
 
   return (
-    <AccountContext.Provider value={account}>
+    <AccountContext.Provider
+      value={{
+        ...account,
+        updateAddress(address) {
+          setAddress(address);
+        },
+      }}
+    >
       {children}
     </AccountContext.Provider>
   );
